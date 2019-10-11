@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -18,6 +19,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private CustomUserDetailService customUserDetailService;
+    @Autowired
+    private LogoutSuccessHandler customLogoutHandler;
 
     @Autowired
     public void globalUserDetails(final AuthenticationManagerBuilder auth) throws Exception {
@@ -36,8 +39,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.httpBasic()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/auth/**").permitAll()
+                .antMatchers("/login", "/oauth/**").permitAll()
                 .anyRequest().authenticated()
+                .and()
+                .logout()
+                .logoutSuccessHandler(customLogoutHandler)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
                 .and()
                 .formLogin().permitAll()
                 .and()

@@ -26,6 +26,8 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     @Autowired
     @Qualifier("authenticationManagerBean")
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private RedisConnectionFactory redisConnectionFactory;
 
@@ -37,21 +39,21 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception { // @formatter:off
         clients.inMemory()
-                .withClient("fooClientIdPassword").secret(new BCryptPasswordEncoder().encode("secret"))
+                .withClient("fooClientIdPassword").secret(bCryptPasswordEncoder.encode("secret"))
 //                .redirectUris("http://localhost:8081/callback")
-                /* 1 */.authorizedGrantTypes("password","refresh_token")
-                /* 2 */.scopes("foo", "read", "write", "bar")
+                /* 1 */.authorizedGrantTypes("password", "refresh_token")
+                /* 2 */.scopes("create", "delete", "update", "read")
                 .accessTokenValiditySeconds(3600)
                 // store accessToken for 1 hour so that it expires quickly
                 /* 3 */.refreshTokenValiditySeconds(2592000);
-                // store refreshToken for 30 days
+        // store refreshToken for 30 days
     } // @formatter:on
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer conf) { // @formatter:off
         conf
                 .tokenStore(tokenStore(redisConnectionFactory))
-                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST)
+                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE)
                 .accessTokenConverter(accessTokenConverter())
                 .authenticationManager(authenticationManager);
     } // @formatter:on
