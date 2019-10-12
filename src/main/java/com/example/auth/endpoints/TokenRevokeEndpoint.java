@@ -1,5 +1,6 @@
 package com.example.auth.endpoints;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.token.ConsumerTokenServices;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +16,8 @@ public class TokenRevokeEndpoint {
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/oauth/token/revokeById/{tokenId}")
-    public void revokeToken(@PathVariable String tokenId) {
-        tokenServices.revokeToken(tokenId);
+    public ResponseEntity<Boolean> revokeToken(@PathVariable String tokenId) {
+        boolean result = tokenServices.revokeToken(tokenId);
+        return ResponseEntity.ok(result);
     }
 }

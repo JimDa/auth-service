@@ -1,6 +1,7 @@
 package com.example.auth.clients;
 
-import com.example.auth.dto.User;
+
+import dto.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
