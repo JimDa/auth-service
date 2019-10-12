@@ -60,14 +60,14 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
 
     @Bean
     @Primary
-    public DefaultTokenServices tokenServices() {
-        final DefaultTokenServices tokenServices = new DefaultTokenServices();
-        tokenServices.setTokenStore(tokenStore(redisConnectionFactory));
+    public DefaultTokenServices defaultTokenServices() {
+        final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        defaultTokenServices.setTokenStore(tokenStore(redisConnectionFactory));
         /* 4 */
-        tokenServices.setSupportRefreshToken(true);
-        tokenServices.setReuseRefreshToken(false);
-        tokenServices.setTokenEnhancer(accessTokenConverter());
-        return tokenServices;
+        defaultTokenServices.setSupportRefreshToken(true);
+        defaultTokenServices.setReuseRefreshToken(false);
+        defaultTokenServices.setTokenEnhancer(accessTokenConverter());
+        return defaultTokenServices;
     }
 
     @Bean
@@ -75,7 +75,7 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
         return new CustomRedisTokenStore(redisConnectionFactory);
     }
 
-    @Bean
+    @Bean(name = "jwtAccessTokenConverter")
     public JwtAccessTokenConverter accessTokenConverter() {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey("123");
