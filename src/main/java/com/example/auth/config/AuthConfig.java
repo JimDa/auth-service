@@ -43,6 +43,10 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
 //                .redirectUris("http://localhost:8081/callback")
                 /* 1 */.authorizedGrantTypes("password", "refresh_token")
                 /* 2 */.scopes("create", "delete", "update", "read")
+                .and()
+                .withClient("user-service").secret(bCryptPasswordEncoder.encode("user-service-secret"))
+                /* 1 */.authorizedGrantTypes("password", "refresh_token")
+                /* 2 */.scopes("create", "delete", "update", "read")
                 .accessTokenValiditySeconds(3600)
                 // store accessToken for 1 hour so that it expires quickly
                 /* 3 */.refreshTokenValiditySeconds(2592000);
