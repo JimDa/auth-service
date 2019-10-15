@@ -44,7 +44,7 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
                 /* 1 */.authorizedGrantTypes("password", "refresh_token")
                 /* 2 */.scopes("create", "delete", "update", "read")
                 .and()
-                .withClient("user-service").secret(bCryptPasswordEncoder.encode("user-service-secret"))
+                .withClient("user-service").secret("user-service-secret")
                 /* 1 */.authorizedGrantTypes("password", "refresh_token")
                 /* 2 */.scopes("create", "delete", "update", "read")
                 .accessTokenValiditySeconds(3600)
