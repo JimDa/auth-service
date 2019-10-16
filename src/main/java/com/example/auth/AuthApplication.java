@@ -17,6 +17,8 @@ public class AuthApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AuthApplication.class, args);
+        System.out.println(new BCryptPasswordEncoder().encode("secret"));
+        System.out.println(new BCryptPasswordEncoder().encode("user-service-secret"));
     }
 
     @Bean

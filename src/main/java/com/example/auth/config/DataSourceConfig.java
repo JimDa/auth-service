@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 public class DataSourceConfig {
 
     @Bean(name = "datasource")
-    @ConfigurationProperties(prefix = "spring.datasource.service-auth")
+    @ConfigurationProperties(prefix = "spring.datasource.auth-service")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }

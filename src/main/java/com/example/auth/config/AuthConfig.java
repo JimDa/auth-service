@@ -20,6 +20,8 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
+import javax.sql.DataSource;
+
 @Configuration
 @EnableAuthorizationServer
 public class AuthConfig extends AuthorizationServerConfigurerAdapter {
@@ -28,6 +30,9 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     private AuthenticationManager authenticationManager;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    @Qualifier("datasource")
+    private DataSource dataSource;
 
     private RedisConnectionFactory redisConnectionFactory;
 
@@ -36,38 +41,43 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
         oauthServer.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
     }
 
+    //客户端请求访问权限校验配置
     @Override
-    public void configure(final ClientDetailsServiceConfigurer clients) throws Exception { // @formatter:off
-        clients.inMemory()
-                .withClient("fooClientIdPassword").secret(bCryptPasswordEncoder.encode("secret"))
-//                .redirectUris("http://localhost:8081/callback")
-                /* 1 */.authorizedGrantTypes("password", "refresh_token")
-                /* 2 */.scopes("create", "delete", "update", "read")
-                .and()
-                .withClient("user-service").secret("user-service-secret")
-                /* 1 */.authorizedGrantTypes("password", "refresh_token")
-                /* 2 */.scopes("create", "delete", "update", "read")
-                .accessTokenValiditySeconds(3600)
-                // store accessToken for 1 hour so that it expires quickly
-                /* 3 */.refreshTokenValiditySeconds(2592000);
-        // store refreshToken for 30 days
-    } // @formatter:on
+    public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
+        //客户端账户密码以及accessToken,refreshToken的有效期配置在内存里
+//        clients.inMemory()
+//                .withClient("fooClientIdPassword").secret(bCryptPasswordEncoder.encode("secret"))
+//                .redirectUris("http://localhost:8082/callback")
+//                .authorizedGrantTypes("password", "refresh_token")
+//                .scopes("create", "delete", "update", "read")
+//                .and()
+//                .withClient("user-service").secret("user-service-secret")
+//                .authorizedGrantTypes("password", "refresh_token")
+//                .scopes("create", "delete", "update", "read")
+//                .accessTokenValiditySeconds(3600)
+//                .refreshTokenValiditySeconds(2592000);
 
+        //客户端账户密码以及accessToken,refreshToken的有效期配置在数据库里
+        clients.jdbc(dataSource);
+        /**一般而言，accessToken配置时间较短便于很快失效；refreshToken配置失效时间较长*/
+    }
+
+
+    //用户访问权限校验以及token存放配置
     @Override
-    public void configure(final AuthorizationServerEndpointsConfigurer conf) { // @formatter:off
+    public void configure(final AuthorizationServerEndpointsConfigurer conf) {
         conf
                 .tokenStore(tokenStore(redisConnectionFactory))
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE)
                 .accessTokenConverter(accessTokenConverter())
                 .authenticationManager(authenticationManager);
-    } // @formatter:on
+    }
 
     @Bean
     @Primary
     public DefaultTokenServices defaultTokenServices() {
         final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setTokenStore(tokenStore(redisConnectionFactory));
-        /* 4 */
         defaultTokenServices.setSupportRefreshToken(true);
         defaultTokenServices.setReuseRefreshToken(false);
         defaultTokenServices.setTokenEnhancer(accessTokenConverter());

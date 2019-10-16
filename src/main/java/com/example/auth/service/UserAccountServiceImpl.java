@@ -1,17 +1,15 @@
 package com.example.auth.service;
 
-
 import com.example.auth.clients.UserClient;
 import dto.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomUserDetailService implements UserDetailsService {
+public class UserAccountServiceImpl implements IUserAccountService {
     @Autowired
     private UserClient userClient;
 

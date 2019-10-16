@@ -1,6 +1,6 @@
 package com.example.auth.config;
 
-import com.example.auth.service.CustomUserDetailService;
+import com.example.auth.service.IUserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,13 +18,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
-    private CustomUserDetailService customUserDetailService;
+    private IUserAccountService iUserAccountService;
     @Autowired
     private LogoutSuccessHandler customLogoutHandler;
 
     @Autowired
     public void globalUserDetails(final AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(customUserDetailService).passwordEncoder(passwordEncoder);
+        auth.userDetailsService(iUserAccountService).passwordEncoder(passwordEncoder);
     }
 
     @Override
@@ -39,8 +39,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.httpBasic()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/oauth/token/revokeById/**").permitAll()
-                .antMatchers("/login", "/oauth/**").permitAll()
+                .antMatchers("/actuator/**").permitAll()
+                .antMatchers("/oauth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout()
