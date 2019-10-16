@@ -10,10 +10,10 @@ spring:
     database: 0
   datasource:
     auth-service:
-      jdbc-url: jdbc:mysql://localhost:3306/auth?useSSL=false&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+      jdbc-url: jdbc:mysql://localhost:3306/auth?useSSL=FALSE&serverTimezone=Asia/Shanghai&allowMultiQueries=true
       username: dpc
       password: dpc123
-      driver-class-name: com.mysql.jdbc.Driver
+#      driver-class-name: com.mysql.jdbc.Driver
 
 management:
   endpoints:
