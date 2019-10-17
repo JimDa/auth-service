@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.auth.mapper.UserAccountMapper">
-    <resultMap id="userResultMap" type="dto.User" autoMapping="true">
+    <resultMap id="userResultMap" type="dto.User">
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="username" property="username" jdbcType="VARCHAR"/>
         <result column="email" property="email" jdbcType="VARCHAR"/>
@@ -13,22 +13,15 @@
         <result column="creator" property="creator" jdbcType="VARCHAR"/>
         <result column="editor" property="editor" jdbcType="VARCHAR"/>
         <result column="edit_date" property="editDate" jdbcType="TIMESTAMP"/>
+        <collection property="roles" ofType="string" column="role_item">
+            <result column="role_name" jdbcType="VARCHAR"/>
+        </collection>
     </resultMap>
-    <select id="selectByUsername" parameterType="string" resultMap="userResultMap" resultType="dto.User">
-        select * from oauth_user_account where username = #{username,jdbcType=VARCHAR}
+    <select id="selectByUsername" parameterType="string" resultMap="userResultMap">
+        select temp.*,our.name role_name from
+        (select oua.*,ourr.role_id from oauth_user_account oua
+        left join oauth_user_role_rels ourr on oua.id = ourr.user_id) temp
+        left join oauth_user_role our on temp.role_id = our.id
+         where temp.username = #{username,jdbcType=VARCHAR}
     </select>
-    <!--<insert id="insert" parameterType="dto.User">-->
-        <!--insert into oauth_user_account (username,email,password,gender,birth_date,create_date,creator,editor,edit_date)-->
-        <!--values (-->
-        <!--#{username,jdbcType=VARCHAR},-->
-        <!--#{email,jdbcType=VARCHAR},-->
-        <!--#{password,jdbcType=VARCHAR},-->
-        <!--#{gender,jdbcType=VARCHAR},-->
-        <!--#{birthDate,jdbcType=TIMESTAMP},-->
-        <!--#{createDate,jdbcType=TIMESTAMP},-->
-        <!--#{creator,jdbcType=VARCHAR},-->
-        <!--#{editor,jdbcType=VARCHAR},-->
-        <!--#{editDate,jdbcType=TIMESTAMP})-->
-    <!--</insert>-->
-
 </mapper>
