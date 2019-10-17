@@ -1,9 +1,8 @@
 package com.example.auth.service;
 
-import com.example.auth.clients.UserClient;
+import com.example.auth.mapper.UserAccountMapper;
 import dto.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -11,14 +10,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserAccountServiceImpl implements IUserAccountService {
     @Autowired
-    private UserClient userClient;
+    private UserAccountMapper userAccountMapper;
 
     @Override
     public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
-        ResponseEntity<User> response = userClient.queryUserByName(name);
-        if (response.getStatusCodeValue() != 200 && null == response.getBody()) {
+        User user = userAccountMapper.selectByUsername(name);
+        if (null == user) {
             throw new UsernameNotFoundException(name);
         }
-        return response.getBody();
+        return user;
     }
 }
