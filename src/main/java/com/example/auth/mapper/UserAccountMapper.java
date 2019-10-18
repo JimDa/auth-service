@@ -1,6 +1,6 @@
 package com.example.auth.mapper;
 
-import dto.User;
+import domain.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
