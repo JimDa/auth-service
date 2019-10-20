@@ -2,6 +2,7 @@ package com.example.auth.config;
 
 
 import com.example.auth.CustomRedisTokenStore;
+import com.example.auth.CustomTokenEnhancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -17,10 +18,13 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 
 @Configuration
 @EnableAuthorizationServer
@@ -66,10 +70,13 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     //用户访问权限校验以及token存放配置
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer conf) {
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(
+                Arrays.asList(tokenEnhancer(), accessTokenConverter()));
         conf
                 .tokenStore(tokenStore(redisConnectionFactory))
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE)
-                .accessTokenConverter(accessTokenConverter())
+//                .accessTokenConverter(accessTokenConverter())
                 .authenticationManager(authenticationManager);
     }
 
@@ -94,5 +101,10 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey("123");
         return converter;
+    }
+
+    @Bean
+    public TokenEnhancer tokenEnhancer() {
+        return new CustomTokenEnhancer();
     }
 }
