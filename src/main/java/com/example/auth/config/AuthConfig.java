@@ -76,6 +76,7 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
         conf
                 .tokenStore(tokenStore(redisConnectionFactory))
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE)
+                .tokenEnhancer(tokenEnhancerChain)
 //                .accessTokenConverter(accessTokenConverter())
                 .authenticationManager(authenticationManager);
     }

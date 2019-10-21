@@ -1,6 +1,7 @@
 package com.example.auth;
 
 import com.google.common.collect.Maps;
+import domain.User;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -12,7 +13,8 @@ public class CustomTokenEnhancer implements TokenEnhancer {
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken oAuth2AccessToken, OAuth2Authentication oAuth2Authentication) {
         HashMap<String, Object> map = Maps.newHashMap();
-        map.put("username", oAuth2Authentication.getName());
+        User user = (User) oAuth2Authentication.getPrincipal();
+        map.put("username", user.getUsername());
         ((DefaultOAuth2AccessToken) oAuth2AccessToken).setAdditionalInformation(map);
         return oAuth2AccessToken;
     }
