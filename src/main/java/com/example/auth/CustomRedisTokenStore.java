@@ -1,7 +1,10 @@
 package com.example.auth;
 
+import domain.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.common.ExpiringOAuth2RefreshToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
@@ -11,6 +14,7 @@ import org.springframework.security.oauth2.provider.token.DefaultAuthenticationK
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.redis.JdkSerializationStrategy;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStoreSerializationStrategy;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -30,6 +34,9 @@ public class CustomRedisTokenStore implements TokenStore {
     private static final String REFRESH_TO_ACCESS = "refresh_to_access:";
     private static final String CLIENT_ID_TO_ACCESS = "client_id_to_access:";
     private static final String UNAME_TO_ACCESS = "uname_to_access:";
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     private final RedisConnectionFactory connectionFactory;
     private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
@@ -88,7 +95,14 @@ public class CustomRedisTokenStore implements TokenStore {
     @Override
     public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
         String key = authenticationKeyGenerator.extractKey(authentication);
-        byte[] serializedKey = serializeKey(AUTH_TO_ACCESS + key);
+        User user = (User) authentication.getPrincipal();
+        Integer id = user.getId();
+        String uniqueId = stringRedisTemplate.opsForValue().get("SSO:UNIQUE:".concat(String.valueOf(id)));
+        if (StringUtils.isEmpty(uniqueId)) {
+            uniqueId = UUID.randomUUID().toString();
+        }
+        String middle = uniqueId.concat(":");
+        byte[] serializedKey = serializeKey(AUTH_TO_ACCESS + middle + key);
         byte[] bytes = null;
         RedisConnection conn = getConnection();
         try {
@@ -146,13 +160,20 @@ public class CustomRedisTokenStore implements TokenStore {
 
     @Override
     public void storeAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Integer id = user.getId();
+        String uniqueId = stringRedisTemplate.opsForValue().get("SSO:UNIQUE:".concat(String.valueOf(id)));
+        if (StringUtils.isEmpty(uniqueId)) {
+            uniqueId = UUID.randomUUID().toString();
+        }
+        String middle = uniqueId.concat(":");
         byte[] serializedAccessToken = serialize(token);
         byte[] serializedAuth = serialize(authentication);
-        byte[] accessKey = serializeKey(ACCESS + token.getValue());
-        byte[] authKey = serializeKey(AUTH + token.getValue());
-        byte[] authToAccessKey = serializeKey(AUTH_TO_ACCESS + authenticationKeyGenerator.extractKey(authentication));
-        byte[] approvalKey = serializeKey(UNAME_TO_ACCESS + getApprovalKey(authentication));
-        byte[] clientId = serializeKey(CLIENT_ID_TO_ACCESS + authentication.getOAuth2Request().getClientId());
+        byte[] accessKey = serializeKey(ACCESS + middle + token.getValue());
+        byte[] authKey = serializeKey(AUTH + middle + token.getValue());
+        byte[] authToAccessKey = serializeKey(AUTH_TO_ACCESS + middle + authenticationKeyGenerator.extractKey(authentication));
+        byte[] approvalKey = serializeKey(UNAME_TO_ACCESS + middle + getApprovalKey(authentication));
+        byte[] clientId = serializeKey(CLIENT_ID_TO_ACCESS + middle + authentication.getOAuth2Request().getClientId());
 
         RedisConnection conn = getConnection();
         try {
@@ -176,9 +197,9 @@ public class CustomRedisTokenStore implements TokenStore {
             if (refreshToken != null && refreshToken.getValue() != null) {
                 byte[] refresh = serialize(token.getRefreshToken().getValue());
                 byte[] auth = serialize(token.getValue());
-                byte[] refreshToAccessKey = serializeKey(REFRESH_TO_ACCESS + token.getRefreshToken().getValue());
+                byte[] refreshToAccessKey = serializeKey(REFRESH_TO_ACCESS + middle + token.getRefreshToken().getValue());
                 conn.stringCommands().set(refreshToAccessKey, auth);
-                byte[] accessToRefreshKey = serializeKey(ACCESS_TO_REFRESH + token.getValue());
+                byte[] accessToRefreshKey = serializeKey(ACCESS_TO_REFRESH + middle + token.getValue());
                 conn.stringCommands().set(accessToRefreshKey, refresh);
                 if (refreshToken instanceof ExpiringOAuth2RefreshToken) {
                     ExpiringOAuth2RefreshToken expiringRefreshToken = (ExpiringOAuth2RefreshToken) refreshToken;
@@ -362,14 +383,14 @@ public class CustomRedisTokenStore implements TokenStore {
             conn.close();
         }
         if (byteList == null || byteList.size() == 0) {
-            return Collections.<OAuth2AccessToken> emptySet();
+            return Collections.<OAuth2AccessToken>emptySet();
         }
         List<OAuth2AccessToken> accessTokens = new ArrayList<OAuth2AccessToken>(byteList.size());
         for (byte[] bytes : byteList) {
             OAuth2AccessToken accessToken = deserializeAccessToken(bytes);
             accessTokens.add(accessToken);
         }
-        return Collections.<OAuth2AccessToken> unmodifiableCollection(accessTokens);
+        return Collections.<OAuth2AccessToken>unmodifiableCollection(accessTokens);
     }
 
     @Override
@@ -383,13 +404,13 @@ public class CustomRedisTokenStore implements TokenStore {
             conn.close();
         }
         if (byteList == null || byteList.size() == 0) {
-            return Collections.<OAuth2AccessToken> emptySet();
+            return Collections.<OAuth2AccessToken>emptySet();
         }
         List<OAuth2AccessToken> accessTokens = new ArrayList<OAuth2AccessToken>(byteList.size());
         for (byte[] bytes : byteList) {
             OAuth2AccessToken accessToken = deserializeAccessToken(bytes);
             accessTokens.add(accessToken);
         }
-        return Collections.<OAuth2AccessToken> unmodifiableCollection(accessTokens);
+        return Collections.<OAuth2AccessToken>unmodifiableCollection(accessTokens);
     }
 }

@@ -20,4 +20,13 @@ public class UserAccountServiceImpl implements IUserAccountService {
         }
         return user;
     }
+
+    @Override
+    public UserDetails loadUserByPhoneNum(String phoneNum) {
+        User user = userAccountMapper.selectByPhoneNum(phoneNum);
+//        if (null == user) {
+//            throw new UserPhoneNumNotFoundException(phoneNum);
+//        }
+        return user;
+    }
 }
