@@ -22,7 +22,7 @@ public class UserAccountServiceImpl implements IUserAccountService {
     }
 
     @Override
-    public UserDetails loadUserByPhoneNum(String phoneNum) {
+    public User loadUserByPhoneNum(String phoneNum) {
         User user = userAccountMapper.selectByPhoneNum(phoneNum);
 //        if (null == user) {
 //            throw new UserPhoneNumNotFoundException(phoneNum);

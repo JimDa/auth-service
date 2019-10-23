@@ -1,8 +1,8 @@
 package com.example.auth.service;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import domain.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface IUserAccountService extends UserDetailsService {
-    UserDetails loadUserByPhoneNum(String phoneNum);
+    User loadUserByPhoneNum(String phoneNum);
 }
