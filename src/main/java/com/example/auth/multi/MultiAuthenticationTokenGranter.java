@@ -58,4 +58,9 @@ public class MultiAuthenticationTokenGranter extends AbstractTokenGranter {
             throw new InvalidGrantException("Could not authenticate user: " + username);
         }
     }
+
+//    @Override
+//    protected OAuth2AccessToken getAccessToken(ClientDetails client, TokenRequest tokenRequest) {
+//        return super.tokenServices.createAccessToken(this.getOAuth2Authentication(client, tokenRequest));
+//    }
 }
