@@ -43,4 +43,8 @@ public class MultiAuthenticationToken extends AbstractAuthenticationToken {
     public void eraseCredentials() {
         super.eraseCredentials();
     }
+
+    public Object getLoginType() {
+        return this.loginType;
+    }
 }

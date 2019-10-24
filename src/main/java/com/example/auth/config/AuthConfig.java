@@ -3,6 +3,8 @@ package com.example.auth.config;
 
 import com.example.auth.CustomRedisTokenStore;
 import com.example.auth.CustomTokenEnhancer;
+import com.example.auth.multi.MultiAuthenticationTokenGranter;
+import com.example.auth.service.IUserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +19,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.CompositeTokenGranter;
+import org.springframework.security.oauth2.provider.TokenGranter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -24,7 +28,9 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableAuthorizationServer
@@ -37,6 +43,8 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     @Autowired
     @Qualifier("datasource")
     private DataSource dataSource;
+    @Autowired
+    private IUserAccountService iUserAccountService;
 
     private RedisConnectionFactory redisConnectionFactory;
 
@@ -77,9 +85,17 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
                 .tokenStore(tokenStore(redisConnectionFactory))
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE)
                 .tokenEnhancer(tokenEnhancerChain)
+                .tokenGranter(tokenGranter(conf))
 //                .accessTokenConverter(accessTokenConverter())
                 .authenticationManager(authenticationManager);
     }
+
+    private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer conf) {
+        List<TokenGranter> granters = new ArrayList<>(Arrays.asList(conf.getTokenGranter()));
+        granters.add(new MultiAuthenticationTokenGranter(authenticationManager, conf.getTokenServices(), conf.getClientDetailsService(), conf.getOAuth2RequestFactory(), iUserAccountService));
+        return new CompositeTokenGranter(granters);
+    }
+
 
     @Bean
     @Primary

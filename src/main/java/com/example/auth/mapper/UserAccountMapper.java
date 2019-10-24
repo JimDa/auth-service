@@ -8,5 +8,7 @@ import org.apache.ibatis.annotations.Param;
 public interface UserAccountMapper {
     User selectByUsername(@Param("username") String username);
 
-    User selectByPhoneNum(@Param("phoneNum") String phoneNum);
+//    User selectByPhoneNum(@Param("phoneNum") String phoneNum);
+
+    User selectByLoginType(@Param("loginType") String loginType, @Param("principal") String principal);
 }

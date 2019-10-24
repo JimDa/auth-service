@@ -1,5 +1,6 @@
 package com.example.auth.config;
 
+import com.example.auth.multi.MultiAuthenticationSecurityConfig;
 import com.example.auth.service.IUserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private IUserAccountService iUserAccountService;
     @Autowired
     private LogoutSuccessHandler customLogoutHandler;
+    @Autowired
+    private MultiAuthenticationSecurityConfig multiAuthenticationSecurityConfig;
 
     @Autowired
     public void globalUserDetails(final AuthenticationManagerBuilder auth) throws Exception {
@@ -36,12 +39,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
         // @formatter:off
-        http.httpBasic()
+        http.formLogin()
+//                .loginPage("/login/page")
+//                .loginProcessingUrl("/login/process")
                 .and()
                 .authorizeRequests()
                 .antMatchers("/actuator/**").permitAll()
                 .antMatchers("/oauth/**").permitAll()
                 .anyRequest().authenticated()
+                .and()
+                .apply(multiAuthenticationSecurityConfig)
                 .and()
                 .logout()
                 .logoutSuccessHandler(customLogoutHandler)

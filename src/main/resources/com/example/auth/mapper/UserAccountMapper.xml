@@ -25,4 +25,12 @@
         left join oauth_user_role our on temp.role_id = our.id
          where temp.username = #{username,jdbcType=VARCHAR}
     </select>
+
+    <select id="selectByLoginType" parameterType="string" resultMap="userResultMap">
+        select temp.*,our.name role_name from
+        (select oua.*,ourr.role_id from oauth_user_account oua
+        left join oauth_user_role_rels ourr on oua.id = ourr.user_id) temp
+        left join oauth_user_role our on temp.role_id = our.id
+         where ${loginType} = #{principal,jdbcType=VARCHAR}
+    </select>
 </mapper>
