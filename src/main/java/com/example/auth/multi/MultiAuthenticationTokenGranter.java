@@ -2,16 +2,17 @@ package com.example.auth.multi;
 
 import com.example.auth.service.IUserAccountService;
 import domain.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,17 +20,18 @@ import java.util.Map;
 public class MultiAuthenticationTokenGranter extends AbstractTokenGranter {
     private static final String GRANT_TYPE = "multi";
     private final AuthenticationManager authenticationManager;
-    @Autowired
     private IUserAccountService iUserAccountService;
+    private DefaultTokenServices defaultTokenServices;
 
-    public MultiAuthenticationTokenGranter(AuthenticationManager authenticationManager, AuthorizationServerTokenServices tokenServices, ClientDetailsService clientDetailsService, OAuth2RequestFactory requestFactory, IUserAccountService iUserAccountService) {
-        this(authenticationManager, tokenServices, clientDetailsService, requestFactory, GRANT_TYPE, iUserAccountService);
+    public MultiAuthenticationTokenGranter(AuthenticationManager authenticationManager, AuthorizationServerTokenServices tokenServices, ClientDetailsService clientDetailsService, OAuth2RequestFactory requestFactory, IUserAccountService iUserAccountService, DefaultTokenServices defaultTokenServices) {
+        this(authenticationManager, tokenServices, clientDetailsService, requestFactory, GRANT_TYPE, iUserAccountService, defaultTokenServices);
     }
 
-    protected MultiAuthenticationTokenGranter(AuthenticationManager authenticationManager, AuthorizationServerTokenServices tokenServices, ClientDetailsService clientDetailsService, OAuth2RequestFactory requestFactory, String grantType, IUserAccountService iUserAccountService) {
+    protected MultiAuthenticationTokenGranter(AuthenticationManager authenticationManager, AuthorizationServerTokenServices tokenServices, ClientDetailsService clientDetailsService, OAuth2RequestFactory requestFactory, String grantType, IUserAccountService iUserAccountService, DefaultTokenServices defaultTokenServices) {
         super(tokenServices, clientDetailsService, requestFactory, grantType);
         this.authenticationManager = authenticationManager;
         this.iUserAccountService = iUserAccountService;
+        this.defaultTokenServices = defaultTokenServices;
     }
 
     @Override
@@ -59,8 +61,8 @@ public class MultiAuthenticationTokenGranter extends AbstractTokenGranter {
         }
     }
 
-//    @Override
-//    protected OAuth2AccessToken getAccessToken(ClientDetails client, TokenRequest tokenRequest) {
-//        return super.tokenServices.createAccessToken(this.getOAuth2Authentication(client, tokenRequest));
-//    }
+    @Override
+    protected OAuth2AccessToken getAccessToken(ClientDetails client, TokenRequest tokenRequest) {
+        return this.defaultTokenServices.createAccessToken(this.getOAuth2Authentication(client, tokenRequest));
+    }
 }

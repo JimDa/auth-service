@@ -78,13 +78,10 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     //用户访问权限校验以及token存放配置
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer conf) {
-        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-        tokenEnhancerChain.setTokenEnhancers(
-                Arrays.asList(tokenEnhancer(), accessTokenConverter()));
         conf
                 .tokenStore(tokenStore(redisConnectionFactory))
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE)
-                .tokenEnhancer(tokenEnhancerChain)
+                .tokenEnhancer(tokenEnhancerChain())
                 .tokenGranter(tokenGranter(conf))
 //                .accessTokenConverter(accessTokenConverter())
                 .authenticationManager(authenticationManager);
@@ -92,7 +89,7 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
 
     private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer conf) {
         List<TokenGranter> granters = new ArrayList<>(Arrays.asList(conf.getTokenGranter()));
-        granters.add(new MultiAuthenticationTokenGranter(authenticationManager, conf.getTokenServices(), conf.getClientDetailsService(), conf.getOAuth2RequestFactory(), iUserAccountService));
+        granters.add(new MultiAuthenticationTokenGranter(authenticationManager, conf.getTokenServices(), conf.getClientDetailsService(), conf.getOAuth2RequestFactory(), iUserAccountService, defaultTokenServices()));
         return new CompositeTokenGranter(granters);
     }
 
@@ -104,8 +101,16 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
         defaultTokenServices.setTokenStore(tokenStore(redisConnectionFactory));
         defaultTokenServices.setSupportRefreshToken(true);
         defaultTokenServices.setReuseRefreshToken(false);
-        defaultTokenServices.setTokenEnhancer(accessTokenConverter());
+        defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
         return defaultTokenServices;
+    }
+
+    @Bean
+    public TokenEnhancerChain tokenEnhancerChain() {
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(
+                Arrays.asList(tokenEnhancer(), accessTokenConverter()));
+        return tokenEnhancerChain;
     }
 
     @Bean
