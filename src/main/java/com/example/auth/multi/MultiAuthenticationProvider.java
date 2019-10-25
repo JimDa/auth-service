@@ -3,6 +3,7 @@ package com.example.auth.multi;
 import com.example.auth.service.IUserAccountService;
 import domain.User;
 import lombok.Data;
+import multi.MultiAuthenticationToken;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;

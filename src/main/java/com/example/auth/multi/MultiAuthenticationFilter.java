@@ -1,5 +1,6 @@
 package com.example.auth.multi;
 
+import multi.MultiAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;

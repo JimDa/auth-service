@@ -2,6 +2,7 @@ package com.example.auth.multi;
 
 import com.example.auth.service.IUserAccountService;
 import domain.User;
+import multi.MultiAuthenticationToken;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
